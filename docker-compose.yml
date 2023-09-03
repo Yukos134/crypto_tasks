@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  adminer:
+    image: adminer:latest
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - 8007:8080
+
+  db:
+    image: postgres:latest
+    hostname: psql
+    environment:
+      POSTGRES_USER: django_user
+      POSTGRES_PASSWORD: django_password
+      POSTGRES_DB: django_db
+    restart: always
+    ports:
+      - 8008:5432
+    env_file:
+      - docker/dev/env/db.env
+    volumes:
+      - postgres_db_data_container:/var/lib/postgresql/data
+      - ./docker/dev/db/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/dev/backend/Dockerfile
+    entrypoint: /entrypoint.sh
+    volumes:
+      - ./backend/:/usr/src/web/
+    ports:
+      - 8006:8000
+    env_file:
+      - docker/dev/env/.env
+    depends_on:
+      - db
+    restart: always
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/dev/nginx/Dockerfile
+    volumes:
+      - ./frontend/src:/usr/src/frontend/src/
+      - ./backend/:/usr/src/web/
+    ports:
+      - 8100:80
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_db_data_container:

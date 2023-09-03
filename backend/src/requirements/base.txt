@@ -1,0 +1,12 @@
+Django==4.2.4
+django-filter==23.2
+
+# for Postgres db
+psycopg[binary]==3.1.8
+
+# for django-admin
+django-modeladmin-reorder==0.3.1
+
+# for RestAPI
+djangorestframework==3.14.0
+drf-yasg==1.17.1 # Swagger
